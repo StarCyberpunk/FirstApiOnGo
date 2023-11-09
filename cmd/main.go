@@ -1,10 +1,8 @@
 package main
 
 import (
-	"awesomeProject1/bankBackend"
+	"awesomeProject1/internal/di"
 	_ "github.com/lib/pq"
-	"log"
-	"net/http"
 )
 
 func main() {
@@ -23,11 +21,14 @@ func main() {
 		var name string
 		rows.Scan(&id, &name)
 		fmt.Printf("User ID: %d, Name: %s\n", id, name)
-	}*/
+	}
 	handler := http.NewServeMux()
-	bankBackend.InitServer(handler)
+	OLD.InitServer(handler)
 	err := http.ListenAndServe("localhost:8000", handler)
 	if err != nil {
 		log.Fatal(err)
 	}
+	*/
+	di.NewContainer()
+	
 }

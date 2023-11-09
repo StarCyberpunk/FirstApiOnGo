@@ -1,5 +1,6 @@
-package bankBackend
+package OLD
 
+/*
 import (
 	"database/sql"
 	"encoding/json"
@@ -9,7 +10,7 @@ import (
 	"net/http"
 )
 
-// User
+ User
 func InitServer(hand *http.ServeMux) {
 
 	handler := hand
@@ -127,7 +128,7 @@ func InitServer(hand *http.ServeMux) {
 			writer.Write(bb)
 			writer.WriteHeader(http.StatusOK)
 			break
-			/*case "POST":
+			case "POST":
 			if err != nil {
 				http.Error(writer, "Bad request", http.StatusBadRequest)
 				return
@@ -157,7 +158,7 @@ func InitServer(hand *http.ServeMux) {
 
 			defer db.Close()
 			defer rows.Close()
-			writer.WriteHeader(http.StatusOK)*/
+			writer.WriteHeader(http.StatusOK)
 		}
 	})
 	handler.HandleFunc("/cards", func(writer http.ResponseWriter, request *http.Request) {
@@ -270,4 +271,6 @@ func InitServer(hand *http.ServeMux) {
 			break
 		}
 	})
-}
+
+
+}*/
