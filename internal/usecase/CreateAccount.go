@@ -12,10 +12,10 @@ func NewCreateUserUseCase(userRepository domain.UserRepository) *CreateUserUseCa
 	}
 }
 
-func (useCase *CreateUserUseCase) Handle(user *domain.User) (*domain.User, error) {
-	err := useCase.UserRepository.Create(user)
+func (useCase *CreateUserUseCase) Handle(user domain.User) (*domain.User, error) {
+	err := useCase.UserRepository.CreateUser(user)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return &user, nil
 }

@@ -1,6 +1,7 @@
 package di
 
 import (
+	"awesomeProject1/internal/handlers"
 	"awesomeProject1/internal/repository/postgres"
 	"awesomeProject1/internal/usecase"
 	"database/sql"
@@ -17,7 +18,7 @@ type Container struct {
 	userRepository *postgres.UserRepository
 	bankRepository *postgres.BankAccountRepository
 	//Handler
-	
+	postUsersHandler *handlers.POSTUserHandler
 }
 
 func NewContainer() *Container {
@@ -36,6 +37,14 @@ func (c *Container) InitUseCases() {
 	c.createUser = usecase.NewCreateUserUseCase(c.userRepository)
 }
 
+func (c *Container) PostUserHandler() *handlers.POSTUserHandler {
+	if c.postUsersHandler == nil {
+		c.postUsersHandler = handlers.NewPOSTUserHandler(c.createUser)
+	}
+
+	return c.postUsersHandler
+}
+
 func (c *Container) HTTPRouter() http.Handler {
 	if c.router != nil {
 		return c.router
@@ -43,9 +52,7 @@ func (c *Container) HTTPRouter() http.Handler {
 
 	router := mux.NewRouter()
 
-	router.Handle("/bills", c.PostBillsHandler()).Methods(http.MethodPost)
-
-	// TODO: Перечисление Эндпоинтов
+	router.Handle("/create", c.PostUserHandler()).Methods(http.MethodPost)
 
 	c.router = router
 
