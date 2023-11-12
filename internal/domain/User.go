@@ -8,13 +8,14 @@ type User struct {
 	Password        string    `json:"password"`
 	Role_Id         int       `json:"role"`
 	Email           string    `json:"email"`
-	Bank_account_ID uuid.UUID `json:"Bank_Account_ID"`
+	Bank_account_ID uuid.UUID `json:"ba_ID"`
 }
 type UserAuthModel struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }
 type UserRegisterModel struct {
+	Id              uuid.UUID `json:"id"`
 	Login           string    `json:"login"`
 	Password        string    `json:"password"`
 	Role_Id         int       `json:"role"`
@@ -26,6 +27,6 @@ type UserRegisterModel struct {
 }
 
 type UserRepository interface {
-	CreateUser(user User) error
+	CreateUser(user User) (uuid.UUID, error)
 	ReadUser(usid uuid.UUID) User
 }

@@ -52,8 +52,8 @@ func (c *Container) HTTPRouter() http.Handler {
 
 	router := mux.NewRouter()
 
-	router.Handle("/create", c.PostUserHandler()).Methods(http.MethodPost)
-
+	router.Handle("/register", c.PostUserHandler()).Methods(http.MethodPost)
+	router.Handle("/login", c.PostUserHandler()).Methods(http.MethodPost)
 	c.router = router
 
 	return c.router

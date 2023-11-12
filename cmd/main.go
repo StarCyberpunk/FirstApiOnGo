@@ -3,6 +3,8 @@ package main
 import (
 	"awesomeProject1/internal/di"
 	_ "github.com/lib/pq"
+	"log"
+	"net/http"
 )
 
 func main() {
@@ -29,6 +31,12 @@ func main() {
 		log.Fatal(err)
 	}
 	*/
-	di.NewContainer()
-	
+	cont := di.NewContainer()
+	cont.InitRepository()
+	cont.InitUseCases()
+	err := http.ListenAndServe("localhost:8000", cont.HTTPRouter())
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
