@@ -3,7 +3,9 @@ package postgres
 import (
 	"awesomeProject1/internal/domain"
 	"database/sql"
+	"errors"
 	"github.com/gofrs/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 )
 
@@ -24,14 +26,22 @@ func (repostitory *UserRepository) CreateUser(us domain.User) (uuid.UUID, error)
 	}
 	return us.ID, err
 }
-func (repostitory *UserRepository) ReadUser(usid uuid.UUID) domain.User {
-	rows, err := repostitory.db_con.Query("select * from public.users where id = $1;", usid)
+
+var ErrUnauthorized = errors.New("Unauthorized")
+
+func (repostitory *UserRepository) FindUser(us domain.UserAuthModel) domain.User {
+	pass, err := bcrypt.GenerateFromPassword([]byte(us.Password), bcrypt.DefaultCost)
+	rows, err := repostitory.db_con.Query("select * from public.users where login = $1;", us.Login)
 	if err != nil {
 		log.Fatalf("Error: Unable to execute query: %v", err)
 	}
 	var user domain.User
 	for rows.Next() {
 		rows.Scan(&user)
+	}
+	err = bcrypt.CompareHashAndPassword(pass, user.Password)
+	if err != nil {
+		return domain.User{}
 	}
 	return user
 }

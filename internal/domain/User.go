@@ -5,7 +5,7 @@ import "github.com/gofrs/uuid"
 type User struct {
 	ID              uuid.UUID `json:"id"`
 	Login           string    `json:"login"`
-	Password        string    `json:"password"`
+	Password        []byte    `json:"password"`
 	Role_Id         int       `json:"role"`
 	Email           string    `json:"email"`
 	Bank_account_ID uuid.UUID `json:"ba_ID"`
