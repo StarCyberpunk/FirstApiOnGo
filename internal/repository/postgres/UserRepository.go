@@ -29,19 +29,18 @@ func (repostitory *UserRepository) CreateUser(us domain.User) (uuid.UUID, error)
 
 var ErrUnauthorized = errors.New("Unauthorized")
 
-func (repostitory *UserRepository) FindUser(us domain.UserAuthModel) domain.User {
-	pass, err := bcrypt.GenerateFromPassword([]byte(us.Password), bcrypt.DefaultCost)
-	rows, err := repostitory.db_con.Query("select * from public.users where login = $1;", us.Login)
+func (repostitory *UserRepository) FindUser(us domain.UserAuthModel) (domain.User, error) {
+	rows, err := repostitory.db_con.Query("SELECT id, login, id_role, email, id_ba, password FROM public.users where login=$1;", us.Login)
 	if err != nil {
 		log.Fatalf("Error: Unable to execute query: %v", err)
 	}
-	var user domain.User
+	user := domain.User{}
 	for rows.Next() {
-		rows.Scan(&user)
+		rows.Scan(&user.ID, &user.Login, &user.Role_Id, &user.Email, &user.Bank_account_ID, &user.Password)
 	}
-	err = bcrypt.CompareHashAndPassword(pass, user.Password)
+	err = bcrypt.CompareHashAndPassword(user.Password, []byte(us.Password))
 	if err != nil {
-		return domain.User{}
+		return domain.User{}, err
 	}
-	return user
+	return user, err
 }

@@ -1,0 +1,6 @@
+POST localhost:8080/register
+Content-Type: dawd
+Authorization: wad
+
+{
+}

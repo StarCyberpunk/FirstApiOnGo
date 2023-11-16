@@ -28,5 +28,5 @@ type UserRegisterModel struct {
 
 type UserRepository interface {
 	CreateUser(user User) (uuid.UUID, error)
-	ReadUser(usid uuid.UUID) User
+	FindUser(us UserAuthModel) (User, error)
 }

@@ -27,7 +27,6 @@ func (response *POSTUserResponse) MarshalJSON() ([]byte, error) {
 		id: response.id,
 	})
 }
-
 func (handler *POSTUserHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	var body domain.UserRegisterModel
 	err := json.NewDecoder(request.Body).Decode(&body)

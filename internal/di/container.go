@@ -19,6 +19,7 @@ type Container struct {
 	bankRepository *postgres.BankAccountRepository
 	//Handler
 	postUsersHandler *handlers.POSTUserHandler
+	postAuthHandler  *handlers.POSTAuthHandler
 }
 
 func NewContainer() *Container {
@@ -44,18 +45,25 @@ func (c *Container) PostUserHandler() *handlers.POSTUserHandler {
 
 	return c.postUsersHandler
 }
+func (c *Container) PostAuthHandler() *handlers.POSTAuthHandler {
+	if c.postAuthHandler == nil {
+		c.postAuthHandler = handlers.NewPOSTAuthHandler(c.createUser)
+	}
+
+	return c.postAuthHandler
+}
 
 func (c *Container) HTTPRouter() http.Handler {
 	if c.router != nil {
 		return c.router
 	}
-
 	router := mux.NewRouter()
+	//router.Use(middleware.AuthMidleware)
 
 	router.Handle("/register", c.PostUserHandler()).Methods(http.MethodPost)
-	router.Handle("/login", c.PostUserHandler()).Methods(http.MethodPost)
-	c.router = router
+	router.Handle("/login", c.PostAuthHandler()).Methods(http.MethodPost)
 
+	c.router = router
 	return c.router
 }
 
