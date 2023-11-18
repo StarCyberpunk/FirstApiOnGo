@@ -8,3 +8,7 @@ type Bank_account struct {
 	PassNumber int       `json:"pass_number"`
 	CashTotal  float64   `json:"cash_total"`
 }
+type BankAccountRepository interface {
+	CreateBankAccount(bank_account Bank_account) (uuid.UUID, error)
+	ReadBankAccount(id_ba uuid.UUID) (Bank_account, error)
+}

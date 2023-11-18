@@ -1,0 +1,12 @@
+POST localhost:8000/register
+Content-Type: application/json
+
+{
+    "login":"test3",
+    "password":"test3",
+    "role":0,
+    "email":"test1",
+    "pass_serial":89,
+    "pass_number": 90,
+    "cash_total":0
+    }

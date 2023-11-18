@@ -37,6 +37,8 @@ func main() {
 	err := http.ListenAndServe("localhost:8000", cont.HTTPRouter())
 	if err != nil {
 		log.Fatal(err)
+		cont.CloseConnect()
 	}
+	cont.CloseConnect()
 
 }

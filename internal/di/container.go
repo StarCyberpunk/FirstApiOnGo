@@ -35,7 +35,7 @@ func (c *Container) InitRepository() {
 }
 
 func (c *Container) InitUseCases() {
-	c.createUser = usecase.NewCreateUserUseCase(c.userRepository)
+	c.createUser = usecase.NewCreateUserUseCase(c.userRepository, c.bankRepository)
 }
 
 func (c *Container) PostUserHandler() *handlers.POSTUserHandler {

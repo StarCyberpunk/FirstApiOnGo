@@ -18,16 +18,20 @@ func NewBankAccountRepository(db_co *sql.DB) *BankAccountRepository {
 }
 
 func (repostitory *BankAccountRepository) CreateBankAccount(ba domain.Bank_account) (uuid.UUID, error) {
-	rows, err := repostitory.db_con.Query("INSERT INTO public.bank_account( pass_serial, pass_number, cash_total) VALUES ( $1, $2, $3);", ba.PassSerial, ba.PassNumber, 0)
+	_, err := repostitory.db_con.Query("INSERT INTO bank.bank_account( id_ba,pass_serial, pass_number, cash_total) VALUES ( $1, $2, $3,$4);", ba.ID, ba.PassSerial, ba.PassNumber, 0)
 	if err != nil {
 		log.Fatalf("Error: Unable to execute query: %v", err)
 	}
-	var id_ba uuid.UUID
-	for rows.Next() {
-		rows.Scan(&id_ba)
-	}
-	return id_ba, err
+	return ba.ID, err
 }
-func (repostitory *BankAccountRepository) ReadBankAccount(baid uuid.UUID) {
-	repostitory.db_con.Query("select * from public.bank_account where id = $1;", baid)
+func (repostitory *BankAccountRepository) ReadBankAccount(id_ba uuid.UUID) (domain.Bank_account, error) {
+	rows, err := repostitory.db_con.Query("select * from bank.bank_account where id_ba = $1;", id_ba)
+	if err != nil {
+		log.Fatalf("Error: Unable to execute query: %v", err)
+	}
+	var ba domain.Bank_account
+	for rows.Next() {
+		rows.Scan(&ba)
+	}
+	return ba, err
 }

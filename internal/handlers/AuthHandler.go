@@ -24,9 +24,9 @@ var jwtSecretKey = []byte(os.Getenv("SECRET_KEY"))
 
 func (response *POSTAuthResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		token string `json:"access_token"`
+		AccessToken string `json:"accessToken"`
 	}{
-		token: response.AccessToken,
+		AccessToken: response.AccessToken,
 	})
 }
 
@@ -43,11 +43,10 @@ func (handler *POSTAuthHandler) ServeHTTP(writer http.ResponseWriter, request *h
 		AccessToken: token,
 	}
 
-	writer.WriteHeader(http.StatusCreated)
-
 	err = json.NewEncoder(writer).Encode(response)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	writer.WriteHeader(http.StatusOK)
 }
