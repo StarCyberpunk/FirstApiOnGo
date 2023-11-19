@@ -17,6 +17,10 @@ type Container struct {
 	//Repository
 	userRepository *postgres.UserRepository
 	bankRepository *postgres.BankAccountRepository
+	cardRepository *postgres.CardRepository
+	currencyRepository *postgres.CurrencyRepository
+	operationBARepository *postgres.OperationBARepository
+	operationCardRepository *postgres.OperationCardRepository
 	//Handler
 	postUsersHandler *handlers.POSTUserHandler
 	postAuthHandler  *handlers.POSTAuthHandler
@@ -32,6 +36,10 @@ func (c *Container) InitRepository() {
 	db := c.db
 	c.userRepository = postgres.NewUserRepository(db)
 	c.bankRepository = postgres.NewBankAccountRepository(db)
+	c.cardRepository=postgres.NewCardRepository(db)
+	c.currencyRepository=postgres.NewCurrencyRepository(db)
+	c.operationBARepository=postgres.NewOperationBARepository(db)
+	c.operationCardRepository=postgres.NewOperationCardRepository(db)
 }
 
 func (c *Container) InitUseCases() {
