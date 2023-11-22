@@ -17,11 +17,7 @@ func CreateConnection() *sql.DB {
 	}
 
 	// Open the connection
-	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
-
-	if err != nil {
-		panic(err)
-	}
+	db, _ := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
 
 	// check the connection
 	err = db.Ping()
