@@ -5,6 +5,7 @@ CREATE TABLE bank.bank_account(
     id_ba uuid PRIMARY KEY,
     pass_serial integer not null ,
     pass_number integer not null ,
+    -- decimal
     cash_total double precision
 );
 CREATE TABLE bank.currency(
@@ -28,6 +29,7 @@ CREATE TABLE bank.cards(
     cash double precision,
     number_card bigint,
     valid_date date,
+    --hash
     cvv smallint,
     block boolean,
     id_ba uuid,
