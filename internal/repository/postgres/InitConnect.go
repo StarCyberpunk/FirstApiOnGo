@@ -8,25 +8,24 @@ import (
 	"os"
 )
 
-func CreateConnection() *sql.DB {
+func CreateConnection() (*sql.DB,error) {
 	// load .env file
 	err := godotenv.Load(".env")
 
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
-
-	// Open the connection
-	db, _ := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
-
+	
+	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
+	
+	if err != nil {
+		return nil,err
+	}
 	// check the connection
 	err = db.Ping()
 
 	if err != nil {
-		panic(err)
+		return nil,err
 	}
-
-	fmt.Println("Successfully connected!")
-	// return the connection
-	return db
+	return db,err
 }
