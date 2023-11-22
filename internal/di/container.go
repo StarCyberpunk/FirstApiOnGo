@@ -33,6 +33,7 @@ func NewContainer() *Container {
 }
 
 func (c *Container) InitRepository() {
+	// db перенести
 	db := c.db
 	c.userRepository = postgres.NewUserRepository(db)
 	c.bankRepository = postgres.NewBankAccountRepository(db)
