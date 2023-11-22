@@ -35,6 +35,7 @@ func (repostitory *UserRepository) FindUser(us domain.UserAuthModel) (domain.Use
 	for rows.Next() {
 		rows.Scan(&user.ID, &user.Login, &user.Role_Id, &user.Email, &user.Bank_account_ID, &user.Password)
 	}
+	//вынести в UC
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(us.Password))
 	if err != nil {
 		return domain.User{}, err
