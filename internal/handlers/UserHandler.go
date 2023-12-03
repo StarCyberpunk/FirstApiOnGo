@@ -17,14 +17,14 @@ func NewPOSTUserHandler(useCase *usecase.CreateUserUseCase) *POSTUserHandler {
 }
 
 type POSTUserResponse struct {
-	id uuid.UUID `json:"id"`
+	AccessToken string `json:"access_token"`
 }
 
 func (response *POSTUserResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		id uuid.UUID `json:"id"`
+		AccessToken string `json:"accessToken"`
 	}{
-		id: response.id,
+		AccessToken: response.AccessToken,
 	})
 }
 func (handler *POSTUserHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -36,9 +36,14 @@ func (handler *POSTUserHandler) ServeHTTP(writer http.ResponseWriter, request *h
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	response := &POSTUserResponse{
-		id: id_us,
+	if id_us == uuid.Nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	body2 := domain.UserAuthModel{Login: body.Login, Password: body.Password}
+	token, err := handler.useCase.Login(body2)
+	response := &POSTAuthResponse{
+		AccessToken: token,
 	}
 
 	writer.WriteHeader(http.StatusCreated)

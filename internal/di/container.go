@@ -2,6 +2,7 @@ package di
 
 import (
 	"awesomeProject1/internal/handlers"
+	"awesomeProject1/internal/handlers/middleware"
 	"awesomeProject1/internal/repository/postgres"
 	"awesomeProject1/internal/usecase"
 	"database/sql"
@@ -15,20 +16,20 @@ type Container struct {
 	//USECASE
 	createUser *usecase.CreateUserUseCase
 	//Repository
-	userRepository *postgres.UserRepository
-	bankRepository *postgres.BankAccountRepository
-	cardRepository *postgres.CardRepository
-	currencyRepository *postgres.CurrencyRepository
-	operationBARepository *postgres.OperationBARepository
+	userRepository          *postgres.UserRepository
+	bankRepository          *postgres.BankAccountRepository
+	cardRepository          *postgres.CardRepository
+	currencyRepository      *postgres.CurrencyRepository
+	operationBARepository   *postgres.OperationBARepository
 	operationCardRepository *postgres.OperationCardRepository
 	//Handler
 	postUsersHandler *handlers.POSTUserHandler
 	postAuthHandler  *handlers.POSTAuthHandler
 }
 
-func NewContainer() *Container {
+func NewContainer(dbb *sql.DB) *Container {
 	return &Container{
-		db: postgres.CreateConnection(),
+		db: dbb,
 	}
 }
 
@@ -37,10 +38,10 @@ func (c *Container) InitRepository() {
 	db := c.db
 	c.userRepository = postgres.NewUserRepository(db)
 	c.bankRepository = postgres.NewBankAccountRepository(db)
-	c.cardRepository=postgres.NewCardRepository(db)
-	c.currencyRepository=postgres.NewCurrencyRepository(db)
-	c.operationBARepository=postgres.NewOperationBARepository(db)
-	c.operationCardRepository=postgres.NewOperationCardRepository(db)
+	c.cardRepository = postgres.NewCardRepository(db)
+	c.currencyRepository = postgres.NewCurrencyRepository(db)
+	c.operationBARepository = postgres.NewOperationBARepository(db)
+	c.operationCardRepository = postgres.NewOperationCardRepository(db)
 }
 
 func (c *Container) InitUseCases() {
@@ -67,10 +68,9 @@ func (c *Container) HTTPRouter() http.Handler {
 		return c.router
 	}
 	router := mux.NewRouter()
-	//router.Use(middleware.AuthMidleware)
-
-	router.Handle("/register", c.PostUserHandler()).Methods(http.MethodPost)
-	router.Handle("/login", c.PostAuthHandler()).Methods(http.MethodPost)
+	router.Use(middleware.AuthMidleware)
+	router.Handle("/api/users", c.PostUserHandler()).Methods(http.MethodPost)
+	router.Handle("/api/tokens", c.PostAuthHandler()).Methods(http.MethodPost)
 
 	c.router = router
 	return c.router

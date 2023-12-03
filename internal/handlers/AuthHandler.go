@@ -5,7 +5,6 @@ import (
 	"awesomeProject1/internal/usecase"
 	"encoding/json"
 	"net/http"
-	"os"
 )
 
 type POSTAuthHandler struct {
@@ -19,8 +18,6 @@ func NewPOSTAuthHandler(useCase *usecase.CreateUserUseCase) *POSTAuthHandler {
 type POSTAuthResponse struct {
 	AccessToken string `json:"access_token"`
 }
-
-var jwtSecretKey = []byte(os.Getenv("SECRET_KEY"))
 
 func (response *POSTAuthResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
@@ -36,7 +33,7 @@ func (handler *POSTAuthHandler) ServeHTTP(writer http.ResponseWriter, request *h
 
 	token, err := handler.useCase.Login(body)
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	response := &POSTAuthResponse{

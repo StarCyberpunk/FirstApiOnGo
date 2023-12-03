@@ -1,9 +1,9 @@
-POST localhost:8000/register
+POST localhost:8000/api/users
 Content-Type: application/json
 
 {
-    "login":"test3",
-    "password":"test3",
+    "login":"test1",
+    "password":"test1",
     "role":0,
     "email":"test1",
     "pass_serial":89,

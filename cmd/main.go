@@ -2,6 +2,7 @@ package main
 
 import (
 	"awesomeProject1/internal/di"
+	"awesomeProject1/internal/repository/postgres"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -31,14 +32,18 @@ func main() {
 		log.Fatal(err)
 	}
 	*/
-	cont := di.NewContainer()
+	db, err := postgres.CreateConnection()
+	if err != nil {
+		log.Fatalf("Error")
+	}
+	cont := di.NewContainer(db)
+	defer cont.CloseConnect()
 	cont.InitRepository()
 	cont.InitUseCases()
-	err := http.ListenAndServe("localhost:8000", cont.HTTPRouter())
+	err = http.ListenAndServe("localhost:8000", cont.HTTPRouter())
 	if err != nil {
 		log.Fatal(err)
 		cont.CloseConnect()
 	}
-	cont.CloseConnect()
 
 }
