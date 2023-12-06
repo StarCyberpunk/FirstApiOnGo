@@ -3,6 +3,7 @@ package handlers
 import (
 	"awesomeProject1/internal/domain"
 	"awesomeProject1/internal/usecase"
+	"context"
 	"encoding/json"
 	"github.com/gofrs/uuid"
 	"net/http"
@@ -10,23 +11,17 @@ import (
 
 type POSTUserHandler struct {
 	useCase *usecase.CreateUserUseCase
+	ctx     context.Context
 }
 
-func NewPOSTUserHandler(useCase *usecase.CreateUserUseCase) *POSTUserHandler {
-	return &POSTUserHandler{useCase: useCase}
+func NewPOSTUserHandler(useCase *usecase.CreateUserUseCase, ctx context.Context) *POSTUserHandler {
+	return &POSTUserHandler{useCase: useCase, ctx: ctx}
 }
 
 type POSTUserResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-func (response *POSTUserResponse) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		AccessToken string `json:"accessToken"`
-	}{
-		AccessToken: response.AccessToken,
-	})
-}
 func (handler *POSTUserHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	var body domain.UserRegisterModel
 	err := json.NewDecoder(request.Body).Decode(&body)
@@ -37,7 +32,7 @@ func (handler *POSTUserHandler) ServeHTTP(writer http.ResponseWriter, request *h
 		return
 	}
 	if id_us == uuid.Nil {
-		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		http.Error(writer, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	body2 := domain.UserAuthModel{Login: body.Login, Password: body.Password}

@@ -6,6 +6,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -32,11 +33,12 @@ func main() {
 		log.Fatal(err)
 	}
 	*/
+	secretKey := os.Getenv("SECRET_KEY")
 	db, err := postgres.CreateConnection()
 	if err != nil {
 		log.Fatalf("Error")
 	}
-	cont := di.NewContainer(db)
+	cont := di.NewContainer(db, secretKey)
 	defer cont.CloseConnect()
 	cont.InitRepository()
 	cont.InitUseCases()

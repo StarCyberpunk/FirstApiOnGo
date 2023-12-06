@@ -2,9 +2,9 @@ package di
 
 import (
 	"awesomeProject1/internal/handlers"
-	"awesomeProject1/internal/handlers/middleware"
 	"awesomeProject1/internal/repository/postgres"
 	"awesomeProject1/internal/usecase"
+	"context"
 	"database/sql"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -13,6 +13,7 @@ import (
 type Container struct {
 	router http.Handler
 	db     *sql.DB
+	ctx    context.Context
 	//USECASE
 	createUser *usecase.CreateUserUseCase
 	//Repository
@@ -27,14 +28,14 @@ type Container struct {
 	postAuthHandler  *handlers.POSTAuthHandler
 }
 
-func NewContainer(dbb *sql.DB) *Container {
+func NewContainer(dbb *sql.DB, secretKey string) *Container {
 	return &Container{
-		db: dbb,
+		db:  dbb,
+		ctx: context.WithValue(context.Background(), "secretKey", secretKey),
 	}
 }
 
 func (c *Container) InitRepository() {
-	// db перенести
 	db := c.db
 	c.userRepository = postgres.NewUserRepository(db)
 	c.bankRepository = postgres.NewBankAccountRepository(db)
@@ -50,14 +51,14 @@ func (c *Container) InitUseCases() {
 
 func (c *Container) PostUserHandler() *handlers.POSTUserHandler {
 	if c.postUsersHandler == nil {
-		c.postUsersHandler = handlers.NewPOSTUserHandler(c.createUser)
+		c.postUsersHandler = handlers.NewPOSTUserHandler(c.createUser, c.ctx)
 	}
 
 	return c.postUsersHandler
 }
 func (c *Container) PostAuthHandler() *handlers.POSTAuthHandler {
 	if c.postAuthHandler == nil {
-		c.postAuthHandler = handlers.NewPOSTAuthHandler(c.createUser)
+		c.postAuthHandler = handlers.NewPOSTAuthHandler(c.createUser, c.ctx)
 	}
 
 	return c.postAuthHandler
@@ -68,7 +69,8 @@ func (c *Container) HTTPRouter() http.Handler {
 		return c.router
 	}
 	router := mux.NewRouter()
-	router.Use(middleware.AuthMidleware)
+	//router.Use(middleware.AuthMidleware)
+
 	router.Handle("/api/users", c.PostUserHandler()).Methods(http.MethodPost)
 	router.Handle("/api/tokens", c.PostAuthHandler()).Methods(http.MethodPost)
 
