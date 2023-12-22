@@ -3,7 +3,6 @@ package handlers
 import (
 	"awesomeProject1/internal/domain"
 	"awesomeProject1/internal/usecase"
-	"context"
 	"encoding/json"
 	"github.com/gofrs/uuid"
 	"net/http"
@@ -11,11 +10,10 @@ import (
 
 type POSTUserHandler struct {
 	useCase *usecase.CreateUserUseCase
-	ctx     context.Context
 }
 
-func NewPOSTUserHandler(useCase *usecase.CreateUserUseCase, ctx context.Context) *POSTUserHandler {
-	return &POSTUserHandler{useCase: useCase, ctx: ctx}
+func NewPOSTUserHandler(useCase *usecase.CreateUserUseCase) *POSTUserHandler {
+	return &POSTUserHandler{useCase: useCase}
 }
 
 type POSTUserResponse struct {

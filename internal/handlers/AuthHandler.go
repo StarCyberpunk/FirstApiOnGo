@@ -3,18 +3,16 @@ package handlers
 import (
 	"awesomeProject1/internal/domain"
 	"awesomeProject1/internal/usecase"
-	"context"
 	"encoding/json"
 	"net/http"
 )
 
 type POSTAuthHandler struct {
 	useCase *usecase.CreateUserUseCase
-	ctx     context.Context
 }
 
-func NewPOSTAuthHandler(useCase *usecase.CreateUserUseCase, ctx context.Context) *POSTAuthHandler {
-	return &POSTAuthHandler{useCase: useCase, ctx: ctx}
+func NewPOSTAuthHandler(useCase *usecase.CreateUserUseCase) *POSTAuthHandler {
+	return &POSTAuthHandler{useCase: useCase}
 }
 
 type POSTAuthResponse struct {

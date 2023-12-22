@@ -26,12 +26,12 @@ func (useCase *CreateUserUseCase) Handle(user domain.UserRegisterModel) (uuid.UU
 	id, _ := uuid.NewV4()
 	id_ba, _ := uuid.NewV4()
 	userauth := domain.UserAuthModel{Login: user.Login}
-	us, err := useCase.UserRepository.FindUser(userauth)
+	us, err := useCase.UserRepository.FindUser(ctx, userauth)
 	if err != nil {
 		return uuid.Nil, err
 	}
 	//возващать нужно новые ошибки
-	if us != nil {
+	if us.Login != "" {
 		return uuid.Nil, err
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
@@ -39,7 +39,7 @@ func (useCase *CreateUserUseCase) Handle(user domain.UserRegisterModel) (uuid.UU
 		return uuid.Nil, fmt.Errorf("Error: Password is not valid: %w", err)
 	}
 	user_pa := domain.User{Login: user.Login, Password: hash, ID: id, Role_Id: user.Role_Id, Email: user.Email}
-	ba := domain.Bank_account{ID: id_ba, PassSerial: user.PassSerial, PassNumber: user.PassNumber, CashTotal: user.CashTotal, IdUser: user.Id}
+	ba := domain.Bank_account{ID: id_ba, PassSerial: user.PassSerial, PassNumber: user.PassNumber, CashTotal: user.CashTotal, IdUser: id}
 	_, err = useCase.UserRepository.CreateUser(user_pa)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("Error: User dont created: %w", err)
@@ -67,7 +67,6 @@ func (useCase *CreateUserUseCase) Login(user domain.UserAuthModel) (string, erro
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 	rr := context.Background().Value("secretKey")
-	fmt.Println(rr)
 	// вынести в Di
 	t, err := token.SignedString([]byte("2"))
 	if err != nil {

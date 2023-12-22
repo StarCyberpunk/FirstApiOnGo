@@ -1,6 +1,9 @@
 package domain
 
-import "github.com/gofrs/uuid"
+import (
+	"context"
+	"github.com/gofrs/uuid"
+)
 
 type User struct {
 	ID       uuid.UUID `json:"id"`
@@ -25,6 +28,6 @@ type UserRegisterModel struct {
 }
 
 type UserRepository interface {
-	CreateUser(user User) (uuid.UUID, error)
-	FindUser(us UserAuthModel) (*User, error)
+	CreateUser(ctx context.Context, user User) (uuid.UUID, error)
+	FindUser(ctx context.Context, us UserAuthModel) (*User, error)
 }

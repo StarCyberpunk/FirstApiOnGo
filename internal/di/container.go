@@ -2,18 +2,22 @@ package di
 
 import (
 	"awesomeProject1/internal/handlers"
+	"awesomeProject1/internal/pkg/persistence"
+	postgrespkg "awesomeProject1/internal/pkg/persistence/postgres"
 	"awesomeProject1/internal/repository/postgres"
 	"awesomeProject1/internal/usecase"
 	"context"
-	"database/sql"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
+	"os"
 )
 
 type Container struct {
-	router http.Handler
-	db     *sql.DB
-	ctx    context.Context
+	router      http.Handler
+	connection  persistence.Connection
+	secretKey   string
+	databaseURL string
 	//USECASE
 	createUser *usecase.CreateUserUseCase
 	//Repository
@@ -28,37 +32,66 @@ type Container struct {
 	postAuthHandler  *handlers.POSTAuthHandler
 }
 
-func NewContainer(dbb *sql.DB, secretKey string) *Container {
-	return &Container{
-		db:  dbb,
-		ctx: context.WithValue(context.Background(), "secretKey", secretKey),
+func NewContainer() *Container {
+	return &Container{}
+}
+func (c *Container) Pool(ctx context.Context) persistence.Connection {
+	if c.connection == nil {
+		postgresPool, err := pgxpool.New(ctx, c.DatabaseURL())
+		if err != nil {
+			panic(err)
+		}
+
+		if err := postgresPool.Ping(ctx); err != nil {
+			panic(err)
+		}
+
+		c.connection = postgrespkg.NewPoolConnection(postgresPool)
 	}
+
+	return c.connection
+}
+
+func (c *Container) DatabaseURL() string {
+	if c.databaseURL == "" {
+		c.databaseURL = os.Getenv("DATABASE_URL")
+	}
+
+	return c.databaseURL
 }
 
 func (c *Container) InitRepository() {
-	db := c.db
-	c.userRepository = postgres.NewUserRepository(db)
-	c.bankRepository = postgres.NewBankAccountRepository(db)
-	c.cardRepository = postgres.NewCardRepository(db)
+	ctx := context.Background()
+	c.userRepository = postgres.NewUserRepository(c.Pool(ctx))
+	c.bankRepository = postgres.NewBankAccountRepository(c.Pool(ctx))
+	/*c.cardRepository = postgres.NewCardRepository(db)
 	c.currencyRepository = postgres.NewCurrencyRepository(db)
 	c.operationBARepository = postgres.NewOperationBARepository(db)
-	c.operationCardRepository = postgres.NewOperationCardRepository(db)
+	c.operationCardRepository = postgres.NewOperationCardRepository(db)*/
 }
 
 func (c *Container) InitUseCases() {
 	c.createUser = usecase.NewCreateUserUseCase(c.userRepository, c.bankRepository)
 }
 
+func (c *Container) SecretKey() string {
+	if c.secretKey == "" {
+		c.secretKey = os.Getenv("SECRET_KEY")
+	}
+
+	return c.secretKey
+}
+
 func (c *Container) PostUserHandler() *handlers.POSTUserHandler {
 	if c.postUsersHandler == nil {
-		c.postUsersHandler = handlers.NewPOSTUserHandler(c.createUser, c.ctx)
+		c.postUsersHandler = handlers.NewPOSTUserHandler(c.createUser)
 	}
 
 	return c.postUsersHandler
 }
 func (c *Container) PostAuthHandler() *handlers.POSTAuthHandler {
 	if c.postAuthHandler == nil {
-		c.postAuthHandler = handlers.NewPOSTAuthHandler(c.createUser, c.ctx)
+		c.postAuthHandler = handlers.NewPOSTAuthHandler(c.createUser)
 	}
 
 	return c.postAuthHandler
@@ -76,8 +109,4 @@ func (c *Container) HTTPRouter() http.Handler {
 
 	c.router = router
 	return c.router
-}
-
-func (c *Container) CloseConnect() {
-	c.db.Close()
 }

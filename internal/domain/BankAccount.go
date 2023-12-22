@@ -1,6 +1,9 @@
 package domain
 
-import "github.com/gofrs/uuid"
+import (
+	"context"
+	"github.com/gofrs/uuid"
+)
 
 type Bank_account struct {
 	ID         uuid.UUID `json:"id_ba"`
@@ -10,6 +13,6 @@ type Bank_account struct {
 	IdUser     uuid.UUID `json:"id_user"`
 }
 type BankAccountRepository interface {
-	CreateBankAccount(bank_account Bank_account) (uuid.UUID, error)
-	ReadBankAccount(id_ba uuid.UUID) (Bank_account, error)
+	CreateBankAccount(ctx context.Context, bank_account Bank_account) (uuid.UUID, error)
+	ReadBankAccount(ctx context.Context, id_ba uuid.UUID) (*Bank_account, error)
 }
