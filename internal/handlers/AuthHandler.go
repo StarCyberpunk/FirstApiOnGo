@@ -2,16 +2,16 @@ package handlers
 
 import (
 	"awesomeProject1/internal/domain"
-	"awesomeProject1/internal/usecase"
+	"awesomeProject1/internal/usecase/auth"
 	"encoding/json"
 	"net/http"
 )
 
 type POSTAuthHandler struct {
-	useCase *usecase.CreateUserUseCase
+	useCase *auth.CreateUserUseCase
 }
 
-func NewPOSTAuthHandler(useCase *usecase.CreateUserUseCase) *POSTAuthHandler {
+func NewPOSTAuthHandler(useCase *auth.CreateUserUseCase) *POSTAuthHandler {
 	return &POSTAuthHandler{useCase: useCase}
 }
 
@@ -26,7 +26,7 @@ func (handler *POSTAuthHandler) ServeHTTP(writer http.ResponseWriter, request *h
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
-	token, err := handler.useCase.Login(body)
+	token, err := handler.useCase.Login(request.Context(), body)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return

@@ -2,17 +2,17 @@ package handlers
 
 import (
 	"awesomeProject1/internal/domain"
-	"awesomeProject1/internal/usecase"
+	"awesomeProject1/internal/usecase/auth"
 	"encoding/json"
 	"github.com/gofrs/uuid"
 	"net/http"
 )
 
 type POSTUserHandler struct {
-	useCase *usecase.CreateUserUseCase
+	useCase *auth.CreateUserUseCase
 }
 
-func NewPOSTUserHandler(useCase *usecase.CreateUserUseCase) *POSTUserHandler {
+func NewPOSTUserHandler(useCase *auth.CreateUserUseCase) *POSTUserHandler {
 	return &POSTUserHandler{useCase: useCase}
 }
 
@@ -24,7 +24,7 @@ func (handler *POSTUserHandler) ServeHTTP(writer http.ResponseWriter, request *h
 	var body domain.UserRegisterModel
 	err := json.NewDecoder(request.Body).Decode(&body)
 
-	id_us, err := handler.useCase.Handle(body)
+	id_us, err := handler.useCase.Create(request.Context(), body)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
@@ -34,7 +34,7 @@ func (handler *POSTUserHandler) ServeHTTP(writer http.ResponseWriter, request *h
 		return
 	}
 	body2 := domain.UserAuthModel{Login: body.Login, Password: body.Password}
-	token, err := handler.useCase.Login(body2)
+	token, err := handler.useCase.Login(request.Context(), body2)
 	response := &POSTAuthResponse{
 		AccessToken: token,
 	}

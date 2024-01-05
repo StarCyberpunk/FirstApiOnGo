@@ -2,11 +2,13 @@ package di
 
 import (
 	"awesomeProject1/internal/handlers"
+	"awesomeProject1/internal/handlers/middleware"
 	"awesomeProject1/internal/pkg/persistence"
 	postgrespkg "awesomeProject1/internal/pkg/persistence/postgres"
 	"awesomeProject1/internal/repository/postgres"
-	"awesomeProject1/internal/usecase"
+	"awesomeProject1/internal/usecase/auth"
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
@@ -16,10 +18,11 @@ import (
 type Container struct {
 	router      http.Handler
 	connection  persistence.Connection
+	pool        *pgxpool.Pool
 	secretKey   string
 	databaseURL string
 	//USECASE
-	createUser *usecase.CreateUserUseCase
+	createUser *auth.CreateUserUseCase
 	//Repository
 	userRepository          *postgres.UserRepository
 	bankRepository          *postgres.BankAccountRepository
@@ -32,8 +35,14 @@ type Container struct {
 	postAuthHandler  *handlers.POSTAuthHandler
 }
 
-func NewContainer() *Container {
-	return &Container{}
+func NewContainer(ctx context.Context) *Container {
+	pool, err := postgres.CreateConnection(ctx)
+	if err != nil {
+		fmt.Printf("error: %w", err)
+	}
+	return &Container{
+		pool: pool,
+	}
 }
 func (c *Container) Pool(ctx context.Context) persistence.Connection {
 	if c.connection == nil {
@@ -71,7 +80,7 @@ func (c *Container) InitRepository() {
 }
 
 func (c *Container) InitUseCases() {
-	c.createUser = usecase.NewCreateUserUseCase(c.userRepository, c.bankRepository)
+	c.createUser = auth.NewCreateUserUseCase(c.userRepository, c.bankRepository)
 }
 
 func (c *Container) SecretKey() string {
@@ -96,16 +105,20 @@ func (c *Container) PostAuthHandler() *handlers.POSTAuthHandler {
 
 	return c.postAuthHandler
 }
+func (c *Container) Close() {
+	c.pool.Close()
+}
 
 func (c *Container) HTTPRouter() http.Handler {
 	if c.router != nil {
 		return c.router
 	}
 	router := mux.NewRouter()
-	//router.Use(middleware.AuthMidleware)
+	securedRouter := router.PathPrefix("/api").Subrouter()
+	securedRouter.Use(middleware.AuthMidleware)
 
-	router.Handle("/api/users", c.PostUserHandler()).Methods(http.MethodPost)
-	router.Handle("/api/tokens", c.PostAuthHandler()).Methods(http.MethodPost)
+	securedRouter.Handle("/users", c.PostUserHandler()).Methods(http.MethodPost)
+	securedRouter.Handle("/tokens", c.PostAuthHandler()).Methods(http.MethodPost)
 
 	c.router = router
 	return c.router

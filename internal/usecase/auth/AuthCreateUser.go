@@ -1,4 +1,4 @@
-package usecase
+package auth
 
 import (
 	"awesomeProject1/internal/domain"
@@ -22,15 +22,13 @@ func NewCreateUserUseCase(userRepository domain.UserRepository, bankRepository d
 	}
 }
 
-func (useCase *CreateUserUseCase) Handle(user domain.UserRegisterModel) (uuid.UUID, error) {
+func (useCase *CreateUserUseCase) Create(ctx context.Context, user domain.UserRegisterModel) (uuid.UUID, error) {
 	id, _ := uuid.NewV4()
-	id_ba, _ := uuid.NewV4()
 	userauth := domain.UserAuthModel{Login: user.Login}
 	us, err := useCase.UserRepository.FindUser(ctx, userauth)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	//возващать нужно новые ошибки
 	if us.Login != "" {
 		return uuid.Nil, err
 	}
@@ -39,19 +37,14 @@ func (useCase *CreateUserUseCase) Handle(user domain.UserRegisterModel) (uuid.UU
 		return uuid.Nil, fmt.Errorf("Error: Password is not valid: %w", err)
 	}
 	user_pa := domain.User{Login: user.Login, Password: hash, ID: id, Role_Id: user.Role_Id, Email: user.Email}
-	ba := domain.Bank_account{ID: id_ba, PassSerial: user.PassSerial, PassNumber: user.PassNumber, CashTotal: user.CashTotal, IdUser: id}
-	_, err = useCase.UserRepository.CreateUser(user_pa)
+	_, err = useCase.UserRepository.CreateUser(ctx, user_pa)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("Error: User dont created: %w", err)
 	}
-	_, err = useCase.BankAccountRepository.CreateBankAccount(ba)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("Error: Bank_Account dont created: %w", err)
-	}
 	return id, nil
 }
-func (useCase *CreateUserUseCase) Login(user domain.UserAuthModel) (string, error) {
-	us, err := useCase.UserRepository.FindUser(user)
+func (useCase *CreateUserUseCase) Login(ctx context.Context, user domain.UserAuthModel) (string, error) {
+	us, err := useCase.UserRepository.FindUser(ctx, user)
 	if err != nil {
 		return "", fmt.Errorf("Not found: %w", err)
 	}
@@ -66,7 +59,6 @@ func (useCase *CreateUserUseCase) Login(user domain.UserAuthModel) (string, erro
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	rr := context.Background().Value("secretKey")
 	// вынести в Di
 	t, err := token.SignedString([]byte("2"))
 	if err != nil {
